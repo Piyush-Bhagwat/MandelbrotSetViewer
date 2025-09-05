@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/addons/p5.sound.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <meta charset="utf-8" />
+</head>
+
+<body>
+  <main>
+    <div class="info">
+      <div id="div1"></div>
+      <div id="div2"></div>
+      <div class="controls">
+        <p>
+          <strong>Controls:</strong><br>
+          Scroll to <span class="highlight">zoom</span>,
+          right-click + drag to <span class="highlight">move</span>,<br>
+          <kbd>w</kbd> = increase details,
+          <kbd>s</kbd> = decrease details,<br>
+          <kbd>r</kbd> = reset,
+          <kbd>p</kbd> = print
+        </p>
+      </div>
+
+      <div class="gallery">
+        <h2>Gallery</h2>
+
+        <select id="gallery">
+        </select>
+
+        <button onclick="setLocation()">Go</button>
+      </div>
+
+      <div class="controls-bar">
+        <button id="muteBtn" onclick="muteAudio()">Mute</button>
+        <button onclick="takeSnap()">Snap</button>
+        <button id="save" onclick="saveLocation()">Save</button>
+      </div>
+    </div>
+  </main>
+  <audio id="stay" src="./STAY.mp3" autoplay loop></audio>
+
+  <script src="data.js"></script>
+  <script src="controls.js"> </script>
+  <script src="sketch.js"></script>
+</body>
+
+</html>

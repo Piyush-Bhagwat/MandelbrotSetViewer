@@ -2,8 +2,10 @@ const gallery = document.getElementById("gallery");
 const stay = document.getElementById("stay");
 
 const saveBtn = document.getElementById("save");
+const info = document.getElementById("info");
 
 let isMute = false;
+let navOpen = true;
 
 for (let i = 0; i<locations.length; i++) {
     gallery.innerHTML += `<option value=${i}>${locations[i].name}</option>`
@@ -40,3 +42,6 @@ function saveLocation(){
 }
 }
 
+function toggleNav(){
+    info.classList.toggle("open");
+}

@@ -2,6 +2,7 @@ html,
 body {
   margin: 0;
   padding: 0;
+  background: black;
 }
 
 canvas {
@@ -10,8 +11,8 @@ canvas {
 
 .info {
   position: fixed;
-  right: 80px;
-  top: 10px;
+  top: -700px;
+  left: 10px;
 
   background: rgba(20, 20, 20, 0.85);
   color: #eee;
@@ -22,6 +23,23 @@ canvas {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   max-width: 280px;
   line-height: 1.5;
+  transition: 0.5s all;
+}
+
+.open{
+  top: 10px;
+}
+
+.close-btn{
+  position: absolute;
+  right: 5px;
+  cursor: pointer;
+}
+.open-btn{
+  position: fixed;
+  left: 10px;
+  top: 10px;
+  cursor: pointer;
 }
 
 .info #div1,

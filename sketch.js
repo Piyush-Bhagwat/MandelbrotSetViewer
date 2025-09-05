@@ -12,6 +12,9 @@ let PROGRESSIVE = false;
 let pressX, pressY, startCX, startCY;
 const scale = () => 4 / (width * ZOOM);
 
+const scaleX = () => 4 / (width * ZOOM);
+const scaleY = () => 4 / (height * ZOOM);
+
 //States
 let ANIMATE = false;
 
@@ -21,7 +24,7 @@ let b;
 let div1, div2;
 
 function setup() {
-  createCanvas(600, 600);
+  createCanvas(windowWidth - 10, windowHeight - 10);
   pixelDensity(1);
   // colorMode(HSB, 1);
   div1 = document.getElementById("div1");
@@ -119,11 +122,11 @@ function updateLocation() {
 }
 
 function drawBrot() {
-  const s = scale();
+  // const s = scale();
   let xMin = CENTER_X - 2 / ZOOM;
   let xMax = CENTER_X + 2 / ZOOM;
-  let yMin = CENTER_Y - 2 / ZOOM;
-  let yMax = CENTER_Y + 2 / ZOOM;
+  let yMin = CENTER_Y - (2 * height / width) / ZOOM;
+  let yMax = CENTER_Y + (2 * height / width) / ZOOM;
   const LIMIT2 = LIMIT * LIMIT;
 
   loadPixels();
@@ -234,10 +237,10 @@ function startProgressive() {
 }
 
 
-function setLocation(){
+function setLocation() {
   const gallery = document.getElementById("gallery");
   const loc = locations[gallery.value];
-  console.log("going to ",loc.name);
+  console.log("going to ", loc.name);
 
   ITERATION = loc.iteration;
   ZOOM = loc.zoom;
@@ -247,10 +250,10 @@ function setLocation(){
   drawBrot();
 }
 
-function takeSnap(){
+function takeSnap() {
   saveCanvas("mandelbrot.jpg");
 }
 
-function getLocation(){
-  return {zoom: ZOOM, centerX: CENTER_X, centerY: CENTER_Y, iteration: ITERATION};
+function getLocation() {
+  return { zoom: ZOOM, centerX: CENTER_X, centerY: CENTER_Y, iteration: ITERATION };
 }

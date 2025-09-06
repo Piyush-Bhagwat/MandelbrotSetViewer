@@ -16,12 +16,22 @@ const scaleX = () => 4 / (width * ZOOM);
 const scaleY = () => 4 / (height * ZOOM);
 
 //States
-let ANIMATE = false;
+
 
 let a;
 let b;
 
 let div1, div2;
+let target = {
+  centerX: CENTER_X,
+  centerY: CENTER_Y,
+  zoom: ZOOM,
+  iteration: ITERATION
+}
+let animate = false;
+let animProgress = 0;      // 0..1
+let animFrom = null;
+
 
 function setup() {
   createCanvas(windowWidth - 10, windowHeight - 10);
@@ -33,8 +43,44 @@ function setup() {
   startProgressive();
   drawBrot();
 }
-
+function smoothstep(t) {  return t<0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; }
 function draw() {
+  if (animate) {
+
+    animProgress = min(1, animProgress + 0.01)
+
+    const e = smoothstep(animProgress / 2.6);
+
+    CENTER_X = lerp(CENTER_X, target.centerX, 0.3);
+    CENTER_Y = lerp(CENTER_Y, target.centerY, 0.3);
+
+    // zoom in log-space (feels natural)
+    const lcur = Math.log(Math.max(ZOOM, 1e-12));
+    const lto = Math.log(Math.max(target.zoom, 1e-12));
+    ZOOM = Math.exp(lerp(lcur, lto, e));
+
+    // iterations (gentle)
+    ITERATION = (lerp(ITERATION, target.iteration, e));
+
+    // render intermediate frame
+    // drawBrot();
+    startProgressive(); // refine final frame
+
+    // finish when close enough -> snap + refine
+    if (
+      abs(CENTER_X - target.centerX) < 1e-8 &&
+      abs(CENTER_Y - target.centerY) < 1e-8 &&
+      abs(Math.log(ZOOM) - lto) < 1e-3
+    ) {
+      CENTER_X = target.centerX;
+      CENTER_Y = target.centerY;
+      ZOOM = target.zoom;
+      ITERATION = target.iteration;
+      animate = false;
+      startProgressive(); // refine final frame
+    }
+  }
+
   if (PROGRESSIVE) {
     drawBrot();
     if (CELL_IDX < CELL_SIZE.length - 1) {
@@ -71,12 +117,7 @@ function keyPressed() {
   }
 
   if (key == "r") {
-    CENTER_X = -0.5;
-    CENTER_Y = 0;
-    ZOOM = 1;
-    ITERATION = 200;
-    startProgressive();
-    drawBrot();
+    resetLocation()
   }
 }
 
@@ -91,33 +132,51 @@ function mouseWheel(event) {
 }
 
 function mousePressed() {
-  if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
-    pressX = mouseX;
-    pressY = mouseY;
-    startCX = CENTER_X;
-    startCY = CENTER_Y;
-    startProgressive();
+  if (mouseButton === CENTER){
+
+    if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+      pressX = mouseX;
+      pressY = mouseY;
+      startCX = CENTER_X;
+      startCY = CENTER_Y;
+      startProgressive();
+    }
   }
 }
 
 function mouseDragged() {
-  if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
-    const s = scale();
-    CENTER_X = startCX - (mouseX - pressX) * s;
-    CENTER_Y = startCY - (mouseY - pressY) * s;
-    startProgressive();
-    drawBrot();
+  if (mouseButton === CENTER){
+
+    if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+      const s = scale();
+      CENTER_X = startCX - (mouseX - pressX) * s;
+      CENTER_Y = startCY - (mouseY - pressY) * s;
+      startProgressive();
+      drawBrot();
+    }
   }
 }
 
 function mouseReleased() {
-  if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) startProgressive();
+  if (mouseButton === CENTER){
+
+    if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) startProgressive();
+  }
 }
 
 //Animating
 function updateLocation() {
   CENTER_X = map(mouseX, 0, width, -1.3, 0.7);
   CENTER_Y = map(mouseY, 0, height, -1.3, 1.3);
+  drawBrot();
+}
+
+function resetLocation() {
+  CENTER_X = -0.5;
+  CENTER_Y = 0;
+  ZOOM = 1;
+  ITERATION = 200;
+  startProgressive();
   drawBrot();
 }
 
@@ -153,8 +212,6 @@ function drawBrot() {
         // let aa = a*a - b*b;
         // let bb = 2 * a / b;
 
-
-
         a = aa + oa;
         b = bb + ob;
 
@@ -169,7 +226,7 @@ function drawBrot() {
 
       let bright = map(n, 0, maxIter, 0, 255);
 
-      if (n >= ITERATION) bright = 0;
+      if (n >= maxIter) bright = 0;
 
       drawPixel(x, y, bright, maxIter, cellS);
     }
@@ -180,7 +237,7 @@ function drawBrot() {
   stroke(1);
 
   textSize(12);
-  div1.innerHTML = `Zoom: ${floor(ZOOM)}; Details: ${ITERATION}`;
+  div1.innerHTML = `Zoom: ${floor(ZOOM)}; Details: ${Math.round(ITERATION)}`;
   div2.innerHTML = `X: ${CENTER_X}; Y: ${CENTER_Y}`;
 }
 
@@ -231,23 +288,30 @@ function drawPixel(i, j, n, maxIter, cellS) {
 }
 
 function startProgressive() {
-  CELL_IDX = 0; // start coarse
+  if (animate) {
+    CELL_IDX = 2;
+  } else CELL_IDX = 0; // start coarse
   PROGRESSIVE = true;
   loop(); // allow draw() to run frames
 }
 
-
 function setLocation() {
+  resetLocation();
+  animFrom = getLocation();
+  animProgress = 0;
   const gallery = document.getElementById("gallery");
   const loc = locations[gallery.value];
+
+  target = loc;
   console.log("going to ", loc.name);
 
-  ITERATION = loc.iteration;
-  ZOOM = loc.zoom;
-  CENTER_X = loc.centerX;
-  CENTER_Y = loc.centerY;
-  startProgressive();
-  drawBrot();
+  animate = true;
+  // ITERATION = loc.iteration;
+  // ZOOM = loc.zoom;
+  // CENTER_X = loc.centerX;
+  // CENTER_Y = loc.centerY;
+  // startProgressive();
+  // drawBrot();
 }
 
 function takeSnap() {

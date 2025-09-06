@@ -16,8 +16,8 @@ let locations = [
     {
         "name": "Mushroom",
         "zoom": 44427,
-        "centerX": -1.473507272,
-        "centerY": 0.0000001203,
+        "centerX": -1.4735058485163814,
+        "centerY": -0.000011089633495735021,
         "iteration": 500
     },
     {
@@ -92,9 +92,9 @@ let locations = [
     },
     {
         "name": "Lighting",
-        "zoom": 766760,
-        "centerX": -1.253671311885862,
-        "centerY": -0.3826695337678726,
+        "zoom": 621075,
+        "centerX": -1.253671586813726,
+        "centerY":-0.3826700355112246,
         "iteration": 400
     }
 ]

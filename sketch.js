@@ -3,6 +3,17 @@ let ZOOM = 1;
 let CENTER_X = -0.5;
 let CENTER_Y = 0;
 
+let renderTime = 0;
+
+let vx = 0;
+let vy = 0;
+let orbitPoints = [];
+let showOrbit = false;
+let prevMouseX = 0;
+let prevMouseY = 0;
+
+let inertialMove = false;
+
 let ITERATION = 200;
 
 const LIMIT = 20;
@@ -42,6 +53,25 @@ function smoothstep(t) {
 
 // ─── Draw loop ───────────────────────────────────────────────────────────────
 function draw() {
+  if (inertialMove) {
+
+    const s = scale();
+
+    CENTER_X -= vx * s;
+    CENTER_Y -= vy * s;
+
+    vx *= 0.92;
+    vy *= 0.92;
+
+    startProgressive();
+
+    if (
+      Math.abs(vx) < 0.05 &&
+      Math.abs(vy) < 0.05
+    ) {
+      inertialMove = false;
+    }
+  }
   if (animate) {
     animProgress = min(1, animProgress + 0.01);
     const e = smoothstep(animProgress / 2.6);
@@ -133,6 +163,11 @@ function mousePressed() {
       pressY = mouseY;
       startCX = CENTER_X;
       startCY = CENTER_Y;
+      prevMouseX = mouseX;
+      prevMouseY = mouseY;
+
+      vx = 0;
+      vy = 0;
       startProgressive();
     }
   }
@@ -144,6 +179,11 @@ function mouseDragged() {
       const s = scale();
       CENTER_X = startCX - (mouseX - pressX) * s;
       CENTER_Y = startCY - (mouseY - pressY) * s;
+      vx = mouseX - prevMouseX;
+      vy = mouseY - prevMouseY;
+
+      prevMouseX = mouseX;
+      prevMouseY = mouseY;
       startProgressive();
       drawBrot();
     }
@@ -153,8 +193,80 @@ function mouseDragged() {
 function mouseReleased() {
   if (mouseButton === CENTER) {
     if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height)
-      startProgressive();
+      inertialMove = true;
+    loop();
+    // startProgressive();
   }
+}
+
+function mouseClicked() {
+
+  if (!keyIsDown(SHIFT))
+    return;
+
+  orbitPoints = [];
+
+  const s = scale();
+
+  const cx =
+    CENTER_X +
+    (mouseX - width / 2) * s;
+
+  const cy =
+    CENTER_Y +
+    (mouseY - height / 2) * s;
+
+  let a = 0;
+  let b = 0;
+
+  orbitPoints.push([a, b]);
+
+  const maxOrbit = 500;
+
+  for (let i = 0; i < maxOrbit; i++) {
+    const aa = a * a - b * b + cx;
+    const bb = 2 * a * b + cy;
+
+    a = aa;
+    b = bb;
+
+    orbitPoints.push([a, b]);
+
+    if (a * a + b * b > LIMIT * LIMIT)
+      break;
+  }
+
+  showOrbit = true;
+
+  startProgressive();
+}
+
+
+function doubleClicked() {
+
+  const s = scale();
+
+  const wx =
+    CENTER_X +
+    (mouseX - width / 2) * s;
+
+  const wy =
+    CENTER_Y +
+    (mouseY - height / 2) * s;
+
+  ZOOM *= 2;
+
+  const sNew = scale();
+
+  CENTER_X =
+    wx -
+    (mouseX - width / 2) * sNew;
+
+  CENTER_Y =
+    wy -
+    (mouseY - height / 2) * sNew;
+
+  startProgressive();
 }
 
 // ─── Navigation ──────────────────────────────────────────────────────────────
@@ -192,6 +304,8 @@ function getLocation() {
 
 // ─── Renderer ────────────────────────────────────────────────────────────────
 function drawBrot() {
+  const startTime =
+    performance.now();
   const xMin = CENTER_X - 2 / ZOOM;
   const xMax = CENTER_X + 2 / ZOOM;
   const yMin = CENTER_Y - (2 * height / width) / ZOOM;
@@ -203,7 +317,7 @@ function drawBrot() {
   const xRange = xMax - xMin;
   const yRange = yMax - yMin;
   const cellS = CELL_SIZE[CELL_IDX] || 1;
-  const maxIter =   floor(getAdaptiveIterations());;
+  const maxIter = floor(getIterations());;
 
   for (let x = 0; x < width; x += cellS) {
     for (let y = 0; y < height; y += cellS) {
@@ -211,40 +325,105 @@ function drawBrot() {
       let b = yMin + ((y + cellS / 2) / height) * yRange;
       const oa = a, ob = b;
       let n = 0;
+      let escaped = false;
 
       while (n < maxIter) {
         const aa = a * a - b * b;
         const bb = 2 * a * b;
         a = aa + oa;
         b = bb + ob;
-        if (a * a + b * b > LIMIT2) break;
+        if (a * a + b * b > LIMIT2) {
+          escaped = true;
+          break
+        };
         n++;
       }
+      let shade = 1;
 
+      if (escaped) {
+
+        const mag = Math.sqrt(a * a + b * b);
+
+        shade =
+          map(
+            Math.log(mag),
+            0,
+            5,
+            0.7,
+            1.4,
+            true
+          );
+      }
       const mag = Math.sqrt(a * a + b * b);
       const smooth = n + 1 - Math.log2(Math.log2(mag));
 
       const bright = n >= maxIter ? 0 : map(n, 0, maxIter, 0, 255);
       // const bright = smooth;
-      drawPixel(x, y, bright, maxIter, cellS);
+      drawPixel(x, y, bright, maxIter, cellS, shade);
     }
   }
 
   updatePixels();
+  
+  if (showOrbit) {
+
+    stroke(35, 30, 180);
+    strokeWeight(2);
+
+    noFill();
+
+    beginShape();
+
+    for (const p of orbitPoints) {
+      const sx =
+        width / 2 +
+        (p[0] - CENTER_X) / scale();
+      const sy =
+        height / 2 +
+        (p[1] - CENTER_Y) / scale();
+      vertex(sx, sy);
+    }
+
+    endShape();
+    fill(255, 0, 0);
+
+    for (const p of orbitPoints) {
+      const sx =
+        width / 2 +
+        (p[0] - CENTER_X) / scale();
+
+      const sy =
+        height / 2 +
+        (p[1] - CENTER_Y) / scale();
+
+      circle(sx, sy, 4);
+    }
+  }
 
   fill(255);
   stroke(1);
   textSize(12);
-  div1.innerHTML = `Zoom: ${floor(ZOOM)}; Details: ${Math.round(ITERATION)}`;
+  div1.innerHTML =
+    `
+Zoom:
+${ZOOM.toExponential(3)}
+<br>
+Details:
+${Math.round(getIterations())}
+<br>
+Render:
+${renderTime.toFixed(1)} ms
+`;
   div2.innerHTML = `X: ${CENTER_X}; Y: ${CENTER_Y}`;
+  renderTime =
+    performance.now() -
+    startTime;
 }
 
-function getAdaptiveIterations() {
-    ITERATION =  max(
-        ITERATION,
-        200 + Math.log10(ZOOM) * 60
-    );
-    return ITERATION
+function getIterations() {
+  ITERATION =
+    200 + Math.log10(ZOOM) * 60;
+  return ITERATION
 }
 
 // ─── Color ───────────────────────────────────────────────────────────────────
@@ -272,8 +451,12 @@ function getColor(n, maxIter) {
   return lerpRGB(palette[idx], palette[idx + 1] || palette[idx], frac);
 }
 
-function drawPixel(i, j, n, maxIter, cellS) {
+function drawPixel(i, j, n, maxIter, cellS, shade = 1) {
   const col = getColor(n, maxIter);
+
+  col[0] *= shade;
+  col[1] *= shade;
+  col[2] *= shade;
   for (let x = 0; x < cellS; x++) {
     for (let y = 0; y < cellS; y++) {
       const idx = (i + x + (j + y) * width) * 4;

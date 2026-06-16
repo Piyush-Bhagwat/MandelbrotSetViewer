@@ -43,7 +43,7 @@ let locations = [
     },
     {
         "name": "Tree",
-        "zoom": 2221100,
+        "zoom": 956110,
         "centerX": -1.940157343,
         "centerY": -0.0000008,
         "iteration": 240

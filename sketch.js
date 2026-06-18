@@ -329,6 +329,7 @@ let lastTouchDist = null;
 let touchStartCX, touchStartCY, touchStartX, touchStartY;
 
 function touchStarted(event) {
+  console.log(event.target);
   if (event.target.closest('#panel')) return; 
 
   if (touches.length === 1) {
@@ -341,11 +342,11 @@ function touchStarted(event) {
   if (touches.length === 2) {
     lastTouchDist = dist(touches[0].x, touches[0].y, touches[1].x, touches[1].y);
   }
-  return false;
+  return;
 }
 
 function touchMoved(event) {
-  if (event.target.closest('#panel')) return; 
+   if (event.target.closest('#panel')) return; 
 
    if (touches.length === 1) {
     const s = scale();
@@ -374,7 +375,7 @@ function touchMoved(event) {
     }
     lastTouchDist = d;
   }
-  return false;
+  return;
 }
 
 function touchEnded() {
@@ -383,7 +384,7 @@ function touchEnded() {
     inertialMove = true;
     loop();
   }
-  return false;
+  return;
 }
 
 // ─── Navigation ──────────────────────────────────────────────────────────────

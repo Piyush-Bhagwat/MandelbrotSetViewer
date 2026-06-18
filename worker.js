@@ -3,13 +3,74 @@ console.log("worker loaded");
 const LIMIT = 20;
 const LIMIT2 = LIMIT * LIMIT;
 
+//orignal
+// const palette = [
+//   [0, 2, 0],
+//   [32, 107, 203],
+//   [237, 255, 255],
+//   [255, 170, 0],
+//   [255, 70, 0],
+//   [180, 0, 180],
+// ];
+
+//pastel
+// const palette = [
+//   [15,  15,  20],   // near black
+//   [180, 160, 220],  // lavender
+//   [255, 210, 200],  // peach
+//   [180, 230, 210],  // mint
+//   [255, 240, 180],  // butter yellow
+//   [200, 180, 240],  // soft violet
+// ];
+
+//BnW
+// const palette = [
+//   [0,   0,   0],    // black
+//   [40,  40,  40],   // dark gray
+//   [120, 120, 120],  // mid gray
+//   [200, 200, 200],  // light gray
+//   [255, 255, 255],  // white
+//   [80,  80,  80],   // back to dark
+// ];
+
+//deepOcean
+// const palette = [
+//   [0,   5,   20],   // abyss
+//   [0,   40,  80],   // deep blue
+//   [0,   120, 160],  // teal
+//   [0,   200, 180],  // cyan
+//   [255, 240, 100],  // bioluminescent yellow
+//   [0,   80,  120],  // back to deep
+// ];
+
+//lava
+// const palette = [
+//   [5,   0,   0],    // near black
+//   [120, 10,  0],    // dark red
+//   [220, 50,  0],    // lava orange
+//   [255, 160, 0],    // molten yellow
+//   [255, 255, 180],  // hot white
+//   [80,  5,   0],    // cooling red
+// ];
+
+//ynthwave
+// const palette = [
+//   [10,  0,   20],   // deep purple-black
+//   [120, 0,   180],  // purple
+//   [220, 0,   150],  // hot pink
+//   [0,   200, 255],  // cyan
+//   [255, 240, 0],    // neon yellow
+//   [60,  0,   120],  // back to dark purple
+// ];
+
+//forestt
 const palette = [
-  [0, 2, 0],
-  [32, 107, 203],
-  [237, 255, 255],
-  [255, 170, 0],
-  [255, 70, 0],
-  [180, 0, 180],
+  [5,   15,  5],    // near black green
+  [20,  60,  20],   // dark forest
+  [60,  120, 40],   // moss
+  [120, 180, 60],   // leaf green
+  [220, 210, 120],  // sunlight
+  [30,  80,  30],   // back to forest
 ];
 
 function lerpRGB(c1, c2, t) {
@@ -50,10 +111,30 @@ self.onmessage = function (e) {
       let escaped = false;
 
       while (n < maxIter) {
-        const aa = a * a - b * b;
-        const bb = 2 * a * b;
+        const aa = a * a  - b * b;
+        const bb = 2 * a * b; //orig
+        //----burningShip
+        // const aa = a*a - b*b;
+        // const bb = 2 * Math.abs(a) * Math.abs(b);
+        //----tricorn
+        // const aa = a * a - b * b;
+        // const bb = -2 * a * b;
+        //----power3
+        // const aa = a * a * a - 3 * a * b * b;
+        // const bb = 3 * a * a * b - b * b * b;
+
+        //----prependicular brot
+        // const aa = a * a - b * b;
+        // const bb = - 2 * Math.abs(a) * b;  // <-- abs on a only, negative
         a = aa + oa;
         b = bb + ob;
+
+
+        //---- linear term
+        // const aa = a * a - b * b;
+        // const bb = 2 * a * b;
+        // a = aa + a + oa;   // <-- + a
+        // b = bb + b + ob;   // <-- + b
         if (a * a + b * b > LIMIT2) { escaped = true; break; }
         n++;
       }
@@ -78,7 +159,7 @@ self.onmessage = function (e) {
           const py = y + cy;
           if (py >= height) break;
           const idx = (px + py * width) * 4;
-          pixels[idx]     = col[0];
+          pixels[idx] = col[0];
           pixels[idx + 1] = col[1];
           pixels[idx + 2] = col[2];
           pixels[idx + 3] = 255;

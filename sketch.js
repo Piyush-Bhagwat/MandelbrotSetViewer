@@ -46,10 +46,10 @@ let pendingRequest = null;  // holds the latest params if worker is busy
 function setup() {
   createCanvas(windowWidth - 10, windowHeight - 10);
   pixelDensity(1);
-  divZoom   = document.getElementById("div-zoom");
-  divIter   = document.getElementById("div-iter");
+  divZoom = document.getElementById("div-zoom");
+  divIter = document.getElementById("div-iter");
   divRender = document.getElementById("div-render");
-  divPos    = document.getElementById("div-pos");
+  divPos = document.getElementById("div-pos");
   worker = new Worker('worker.js');
   worker.onerror = (e) => console.error("Worker error:", e);
   worker.onmessage = onWorkerMessage;
@@ -129,7 +129,9 @@ function drawBrot() {
     height,
     cellS,
     offX,
-    offY
+    offY,
+    formula: currentFormula,   // e.g. "mandelbrot"
+    colorScheme: currentColor
   });
 }
 

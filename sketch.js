@@ -328,7 +328,9 @@ function doubleClicked() {
 let lastTouchDist = null;
 let touchStartCX, touchStartCY, touchStartX, touchStartY;
 
-function touchStarted() {
+function touchStarted(event) {
+  if (event.target.closest('#panel')) return; 
+
   if (touches.length === 1) {
     touchStartX  = touches[0].x;
     touchStartY  = touches[0].y;
@@ -342,7 +344,9 @@ function touchStarted() {
   return false;
 }
 
-function touchMoved() {
+function touchMoved(event) {
+  if (event.target.closest('#panel')) return; 
+
    if (touches.length === 1) {
     const s = scale();
     // offset from anchor, not delta

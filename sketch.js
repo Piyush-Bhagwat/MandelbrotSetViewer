@@ -11,13 +11,21 @@ let orbitPoints = [];
 let showOrbit = false;
 let prevMouseX = 0;
 let prevMouseY = 0;
-
 let inertialMove = false;
 
 let ITERATION = 200;
 
 const LIMIT = 20;
-const CELL_SIZE = [15, 10, 5, 3, 2, 1];
+const CELL_SIZE = [32, 16, 8, 4, 2, 1]
+
+const PASS_OFFSETS = [
+  [0, 0],
+  [16, 0],
+  [0, 16],
+  [16, 16],
+  [8, 8],
+  [4, 4]
+];
 let CELL_IDX = 0;
 let PROGRESSIVE = false;
 
@@ -33,6 +41,7 @@ let animFrom = null;
 // ─── Setup ───────────────────────────────────────────────────────────────────
 function setup() {
   createCanvas(windowWidth - 10, windowHeight - 10);
+
   pixelDensity(1);
   div1 = document.getElementById("div1");
   div2 = document.getElementById("div2");
@@ -60,15 +69,12 @@ function draw() {
     CENTER_X -= vx * s;
     CENTER_Y -= vy * s;
 
-    vx *= 0.92;
-    vy *= 0.92;
+    vx *= 0.5;
+    vy *= 0.5;
+    CELL_IDX = 3;
+    drawBrot();
 
-    startProgressive();
-
-    if (
-      Math.abs(vx) < 0.05 &&
-      Math.abs(vy) < 0.05
-    ) {
+    if (Math.abs(vx) < 0.5 && Math.abs(vy) < 0.5) {
       inertialMove = false;
     }
   }
@@ -314,15 +320,27 @@ function drawBrot() {
   const yMax = CENTER_Y + (2 * h / w) / ZOOM;
   const LIMIT2 = LIMIT * LIMIT;
 
+  // if (CELL_IDX === 0)
   loadPixels();
 
   const xRange = xMax - xMin;
   const yRange = yMax - yMin;
   const cellS = CELL_SIZE[CELL_IDX] || 1;
   const maxIter = floor(getIterations());;
+  const [offX, offY] =
+    PASS_OFFSETS[CELL_IDX] || [0, 0];
 
-  for (let x = 0; x < w; x += cellS) {
-    for (let y = 0; y < h; y += cellS) {
+  for (
+    let x = offX;
+    x < w;
+    x += cellS
+  ) {
+    for (
+      let y = offY;
+      y < h;
+      y += cellS
+    ) {
+
       let a = xMin + ((x + cellS / 2) / w) * xRange;
       let b = yMin + ((y + cellS / 2) / h) * yRange;
       const oa = a, ob = b;
@@ -344,21 +362,23 @@ function drawBrot() {
 
       if (escaped) {
 
-        const mag = Math.sqrt(a * a + b * b);
+        const mag2 =
+          a * a + b * b;
+
+        const logMag =
+          Math.log(mag2) * 0.5;
 
         shade =
-          map(
-            Math.log(mag),
-            0,
-            5,
+          constrain(
+            0.7 + logMag * 0.14,
             0.7,
-            1.4,
-            true
+            1.4
           );
       }
 
       const bright = n >= maxIter ? 0 : n * 255 / maxIter;
       drawPixel(x, y, bright, maxIter, cellS, shade);
+
     }
   }
 
@@ -372,14 +392,16 @@ function drawBrot() {
     noFill();
 
     beginShape();
-
+    const invScale =
+      1 / scale();
     for (const p of orbitPoints) {
       const sx =
         w / 2 +
-        (p[0] - CENTER_X) / scale();
+        (p[0] - CENTER_X)
+        * invScale;
       const sy =
         h / 2 +
-        (p[1] - CENTER_Y) / scale();
+        (p[1] - CENTER_Y) * invScale;
       vertex(sx, sy);
     }
 
@@ -389,11 +411,11 @@ function drawBrot() {
     for (const p of orbitPoints) {
       const sx =
         w / 2 +
-        (p[0] - CENTER_X) / scale();
+        (p[0] - CENTER_X) * invScale;
 
       const sy =
         h / 2 +
-        (p[1] - CENTER_Y) / scale();
+        (p[1] - CENTER_Y) * invScale;
 
       circle(sx, sy, 4);
     }
@@ -461,7 +483,18 @@ function drawPixel(i, j, n, maxIter, cellS, shade = 1) {
   col[1] *= shade;
   col[2] *= shade;
   for (let x = 0; x < cellS; x++) {
+
+    const px = i + x;
+
+    if (px >= width)
+      break;
+
     for (let y = 0; y < cellS; y++) {
+
+      const py = j + y;
+
+      if (py >= height)
+        break;
       const idx = (i + x + (j + y) * width) * 4;
       pixels[idx] = col[0];
       pixels[idx + 1] = col[1];
@@ -470,6 +503,7 @@ function drawPixel(i, j, n, maxIter, cellS, shade = 1) {
     }
   }
 }
+
 
 // ─── Progressive rendering ───────────────────────────────────────────────────
 function startProgressive() {

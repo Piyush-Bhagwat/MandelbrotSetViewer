@@ -3,7 +3,8 @@
 let ZOOM = 1;
 let CENTER_X = -0.5;
 let CENTER_Y = 0;
-
+let currentFormula = 'mandelbrot';
+let currentColor   = 'original';
 let renderTime = 0;
 let vx = 0;
 let vy = 0;

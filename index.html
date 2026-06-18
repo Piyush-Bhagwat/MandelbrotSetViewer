@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/addons/p5.sound.min.js"></script>
   <link rel="stylesheet" type="text/css" href="style.css" />
   <meta charset="utf-8" />
 </head>
+
 <body>
   <main>
     <button class="nav-btn" id="navBtn" onclick="toggleNav()">Explorer</button>
@@ -48,6 +50,29 @@
       </div>
 
       <div class="section">
+        <div class="section-label">Formula</div>
+        <select id="formulaSelect" onchange="currentFormula=this.value; startProgressive();">
+          <option value="mandelbrot">Mandelbrot</option>
+          <option value="burning">Burning Ship</option>
+          <option value="tricorn">Tricorn</option>
+          <option value="power3">Power 3</option>
+          <option value="perpendicular">Perpendicular</option>
+          <option value="linear">Linear Term</option>
+        </select>
+
+        <div class="section-label" style="margin-top:8px">Color</div>
+        <select id="colorSelect" onchange="currentColor=this.value; startProgressive();">
+          <option value="original">Original</option>
+          <option value="pastel">Pastel</option>
+          <option value="bnw">Black & White</option>
+          <option value="ocean">Deep Ocean</option>
+          <option value="lava">Lava</option>
+          <option value="synthwave">Synthwave</option>
+          <option value="forest">Forest</option>
+        </select>
+      </div>
+
+      <div class="section">
         <div class="section-label">Gallery</div>
         <select id="gallery"></select>
         <div class="btn-row">
@@ -66,4 +91,5 @@
   <script src="controls.js"></script>
   <script src="sketch.js"></script>
 </body>
+
 </html>

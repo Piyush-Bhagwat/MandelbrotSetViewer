@@ -13,65 +13,45 @@ const LIMIT2 = LIMIT * LIMIT;
 //   [180, 0, 180],
 // ];
 
-//pastel
-// const palette = [
-//   [15,  15,  20],   // near black
-//   [180, 160, 220],  // lavender
-//   [255, 210, 200],  // peach
-//   [180, 230, 210],  // mint
-//   [255, 240, 180],  // butter yellow
-//   [200, 180, 240],  // soft violet
-// ];
+const palettes = {
+  original:   [[0,2,0],[32,107,203],[237,255,255],[255,170,0],[255,70,0],[180,0,180]],
+  pastel:     [[15,15,20],[180,160,220],[255,210,200],[180,230,210],[255,240,180],[200,180,240]],
+  bnw:        [[0,0,0],[40,40,40],[120,120,120],[200,200,200],[255,255,255],[80,80,80]],
+  ocean:      [[0,5,20],[0,40,80],[0,120,160],[0,200,180],[255,240,100],[0,80,120]],
+  lava:       [[5,0,0],[120,10,0],[220,50,0],[255,160,0],[255,255,180],[80,5,0]],
+  synthwave:  [[10,0,20],[120,0,180],[220,0,150],[0,200,255],[255,240,0],[60,0,120]],
+  forest:     [[5,15,5],[20,60,20],[60,120,40],[120,180,60],[220,210,120],[30,80,30]],
+};
 
-//BnW
-// const palette = [
-//   [0,   0,   0],    // black
-//   [40,  40,  40],   // dark gray
-//   [120, 120, 120],  // mid gray
-//   [200, 200, 200],  // light gray
-//   [255, 255, 255],  // white
-//   [80,  80,  80],   // back to dark
-// ];
-
-//deepOcean
-// const palette = [
-//   [0,   5,   20],   // abyss
-//   [0,   40,  80],   // deep blue
-//   [0,   120, 160],  // teal
-//   [0,   200, 180],  // cyan
-//   [255, 240, 100],  // bioluminescent yellow
-//   [0,   80,  120],  // back to deep
-// ];
-
-//lava
-// const palette = [
-//   [5,   0,   0],    // near black
-//   [120, 10,  0],    // dark red
-//   [220, 50,  0],    // lava orange
-//   [255, 160, 0],    // molten yellow
-//   [255, 255, 180],  // hot white
-//   [80,  5,   0],    // cooling red
-// ];
-
-//ynthwave
-// const palette = [
-//   [10,  0,   20],   // deep purple-black
-//   [120, 0,   180],  // purple
-//   [220, 0,   150],  // hot pink
-//   [0,   200, 255],  // cyan
-//   [255, 240, 0],    // neon yellow
-//   [60,  0,   120],  // back to dark purple
-// ];
-
-//forestt
-const palette = [
-  [5,   15,  5],    // near black green
-  [20,  60,  20],   // dark forest
-  [60,  120, 40],   // moss
-  [120, 180, 60],   // leaf green
-  [220, 210, 120],  // sunlight
-  [30,  80,  30],   // back to forest
-];
+function iterate(formula, a, b, oa, ob) {
+  let aa, bb;
+  switch(formula) {
+    case 'burning':
+      aa = a*a - b*b;
+      bb = 2 * Math.abs(a) * Math.abs(b);
+      break;
+    case 'tricorn':
+      aa = a*a - b*b;
+      bb = -2 * a * b;
+      break;
+    case 'power3':
+      aa = a*a*a - 3*a*b*b;
+      bb = 3*a*a*b - b*b*b;
+      break;
+    case 'perpendicular':
+      aa = a*a - b*b;
+      bb = -2 * Math.abs(a) * b;
+      break;
+    case 'linear':
+      aa = a*a - b*b;
+      bb = 2*a*b;
+      return [aa + a + oa, bb + b + ob];  // different update
+    default: // mandelbrot
+      aa = a*a - b*b;
+      bb = 2*a*b;
+  }
+  return [aa + oa, bb + ob];
+}
 
 function lerpRGB(c1, c2, t) {
   return [
@@ -81,16 +61,16 @@ function lerpRGB(c1, c2, t) {
   ];
 }
 
-function getColor(n, maxIter) {
-  let t = (n / maxIter) % 1;
-  let idx = Math.floor(t * (palette.length - 1));
+function getColor(n, maxIter, palette) {  // palette passed in now
+  let t   = (n / maxIter) % 1;
+  let idx  = Math.floor(t * (palette.length - 1));
   let frac = t * (palette.length - 1) - idx;
   return lerpRGB(palette[idx], palette[idx + 1] || palette[idx], frac);
 }
 
 self.onmessage = function (e) {
-  const { centerX, centerY, zoom, iteration, width, height, cellS, offX, offY } = e.data;
-
+  const { centerX, centerY, zoom, iteration, width, height, cellS, offX, offY, formula, colorScheme } = e.data;
+const palette = palettes[colorScheme] || palettes.original;
   const xMin = centerX - 2 / zoom;
   const xMax = centerX + 2 / zoom;
   const yMin = centerY - (2 * height / width) / zoom;
@@ -111,30 +91,7 @@ self.onmessage = function (e) {
       let escaped = false;
 
       while (n < maxIter) {
-        const aa = a * a  - b * b;
-        const bb = 2 * a * b; //orig
-        //----burningShip
-        // const aa = a*a - b*b;
-        // const bb = 2 * Math.abs(a) * Math.abs(b);
-        //----tricorn
-        // const aa = a * a - b * b;
-        // const bb = -2 * a * b;
-        //----power3
-        // const aa = a * a * a - 3 * a * b * b;
-        // const bb = 3 * a * a * b - b * b * b;
-
-        //----prependicular brot
-        // const aa = a * a - b * b;
-        // const bb = - 2 * Math.abs(a) * b;  // <-- abs on a only, negative
-        a = aa + oa;
-        b = bb + ob;
-
-
-        //---- linear term
-        // const aa = a * a - b * b;
-        // const bb = 2 * a * b;
-        // a = aa + a + oa;   // <-- + a
-        // b = bb + b + ob;   // <-- + b
+        [a, b] = iterate(formula, a, b, oa, ob);
         if (a * a + b * b > LIMIT2) { escaped = true; break; }
         n++;
       }
@@ -146,7 +103,7 @@ self.onmessage = function (e) {
       }
 
       const bright = n >= maxIter ? 0 : n * 255 / maxIter;
-      const col = getColor(bright, 255);
+      const col = getColor(bright, 255, palette);
       col[0] *= shade;
       col[1] *= shade;
       col[2] *= shade;

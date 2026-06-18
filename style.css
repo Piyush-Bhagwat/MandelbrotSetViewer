@@ -202,3 +202,29 @@ select:focus { outline: none; border-color: rgba(255,255,255,0.22); }
   color: #b8b4ff;
 }
 .btn.go:hover { background: rgba(90,80,220,0.4); color: #fff; }
+
+@media (max-width: 600px) {
+  .panel {
+    width: calc(100vw - 24px);
+    top: auto;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  .nav-btn {
+    top: auto;
+    bottom: 12px;
+    left: 12px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .stat.wide {
+    grid-column: span 3;
+  }
+}

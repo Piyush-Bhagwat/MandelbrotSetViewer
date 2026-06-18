@@ -324,6 +324,68 @@ function doubleClicked() {
   startProgressive();
 }
 
+let lastTouchDist = null;
+let touchStartCX, touchStartCY, touchStartX, touchStartY;
+
+function touchStarted() {
+  if (touches.length === 1) {
+    touchStartX  = touches[0].x;
+    touchStartY  = touches[0].y;
+    touchStartCX = CENTER_X;
+    touchStartCY = CENTER_Y;
+    vx = 0; vy = 0;
+  }
+  if (touches.length === 2) {
+    lastTouchDist = dist(touches[0].x, touches[0].y, touches[1].x, touches[1].y);
+  }
+  return false; // prevent default scroll
+}
+
+function touchMoved() {
+  if (touches.length === 1) {
+    const s = scale();
+    CENTER_X = touchStartCX - (touches[0].x - touchStartX) * s;
+    CENTER_Y = touchStartCY - (touches[0].y - touchStartY) * s;
+    vx = touches[0].x - touchStartX;
+    vy = touches[0].y - touchStartY;
+    touchStartX  = touches[0].x;
+    touchStartY  = touches[0].y;
+    touchStartCX = CENTER_X;
+    touchStartCY = CENTER_Y;
+    startProgressive();
+    drawBrot();
+  }
+  if (touches.length === 2) {
+    const d = dist(touches[0].x, touches[0].y, touches[1].x, touches[1].y);
+    if (lastTouchDist) {
+      const factor = d / lastTouchDist;
+      const mx = (touches[0].x + touches[1].x) / 2;
+      const my = (touches[0].y + touches[1].y) / 2;
+      const s  = scale();
+      const wx = CENTER_X + (mx - width  * 0.5) * s;
+      const wy = CENTER_Y + (my - height * 0.5) * s;
+      ZOOM *= factor;
+      ZOOM = constrain(ZOOM, 1, 120657239077606);
+      const sNew = scale();
+      CENTER_X = wx - (mx - width  * 0.5) * sNew;
+      CENTER_Y = wy - (my - height * 0.5) * sNew;
+      startProgressive();
+      drawBrot();
+    }
+    lastTouchDist = d;
+  }
+  return false;
+}
+
+function touchEnded() {
+  lastTouchDist = null;
+  if (touches.length === 0) {
+    inertialMove = true;
+    loop();
+  }
+  return false;
+}
+
 // ─── Navigation ──────────────────────────────────────────────────────────────
 function resetLocation() {
   CENTER_X = -0.5; CENTER_Y = 0; ZOOM = 1; ITERATION = 200;

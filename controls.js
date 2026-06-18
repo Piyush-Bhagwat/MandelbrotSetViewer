@@ -45,3 +45,4 @@ function saveLocation(){
 function toggleNav(){
     info.classList.toggle("open");
 }
+

@@ -306,10 +306,12 @@ function getLocation() {
 function drawBrot() {
   const startTime =
     performance.now();
+  const w = width;
+  const h = height;
   const xMin = CENTER_X - 2 / ZOOM;
   const xMax = CENTER_X + 2 / ZOOM;
-  const yMin = CENTER_Y - (2 * height / width) / ZOOM;
-  const yMax = CENTER_Y + (2 * height / width) / ZOOM;
+  const yMin = CENTER_Y - (2 * h / w) / ZOOM;
+  const yMax = CENTER_Y + (2 * h / w) / ZOOM;
   const LIMIT2 = LIMIT * LIMIT;
 
   loadPixels();
@@ -319,10 +321,10 @@ function drawBrot() {
   const cellS = CELL_SIZE[CELL_IDX] || 1;
   const maxIter = floor(getIterations());;
 
-  for (let x = 0; x < width; x += cellS) {
-    for (let y = 0; y < height; y += cellS) {
-      let a = xMin + ((x + cellS / 2) / width) * xRange;
-      let b = yMin + ((y + cellS / 2) / height) * yRange;
+  for (let x = 0; x < w; x += cellS) {
+    for (let y = 0; y < h; y += cellS) {
+      let a = xMin + ((x + cellS / 2) / w) * xRange;
+      let b = yMin + ((y + cellS / 2) / h) * yRange;
       const oa = a, ob = b;
       let n = 0;
       let escaped = false;
@@ -354,17 +356,14 @@ function drawBrot() {
             true
           );
       }
-      const mag = Math.sqrt(a * a + b * b);
-      const smooth = n + 1 - Math.log2(Math.log2(mag));
 
-      const bright = n >= maxIter ? 0 : map(n, 0, maxIter, 0, 255);
-      // const bright = smooth;
+      const bright = n >= maxIter ? 0 : n * 255 / maxIter;
       drawPixel(x, y, bright, maxIter, cellS, shade);
     }
   }
 
   updatePixels();
-  
+
   if (showOrbit) {
 
     stroke(35, 30, 180);
@@ -376,10 +375,10 @@ function drawBrot() {
 
     for (const p of orbitPoints) {
       const sx =
-        width / 2 +
+        w / 2 +
         (p[0] - CENTER_X) / scale();
       const sy =
-        height / 2 +
+        h / 2 +
         (p[1] - CENTER_Y) / scale();
       vertex(sx, sy);
     }
@@ -389,11 +388,11 @@ function drawBrot() {
 
     for (const p of orbitPoints) {
       const sx =
-        width / 2 +
+        w / 2 +
         (p[0] - CENTER_X) / scale();
 
       const sy =
-        height / 2 +
+        h / 2 +
         (p[1] - CENTER_Y) / scale();
 
       circle(sx, sy, 4);
@@ -403,21 +402,25 @@ function drawBrot() {
   fill(255);
   stroke(1);
   textSize(12);
-  div1.innerHTML =
-    `
-Zoom:
-${ZOOM.toExponential(3)}
-<br>
-Details:
-${Math.round(getIterations())}
-<br>
-Render:
-${renderTime.toFixed(1)} ms
-`;
-  div2.innerHTML = `X: ${CENTER_X}; Y: ${CENTER_Y}`;
   renderTime =
     performance.now() -
     startTime;
+
+  if (CELL_IDX === CELL_SIZE.length - 2) {
+    div1.innerHTML =
+      `
+      Zoom:
+      ${ZOOM.toExponential(3)}
+      <br>
+      Details:
+      ${maxIter}
+      <br>
+      Render:
+      ${renderTime.toFixed(1)} ms
+      `;
+
+  }
+  div2.innerHTML = `X: ${CENTER_X}; Y: ${CENTER_Y}`;
 }
 
 function getIterations() {

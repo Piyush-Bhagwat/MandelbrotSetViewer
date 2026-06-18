@@ -239,7 +239,8 @@ function keyPressed() {
 }
 
 function mouseWheel(event) {
-  if (event.target.closest('#panel')) return; 
+    if (!event.target.closest('#defaultCanvas0')) return; 
+
   if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
     const factor = event.delta > 0 ? 0.9 : 1.2;
     const s = scale();
@@ -330,7 +331,7 @@ let touchStartCX, touchStartCY, touchStartX, touchStartY;
 
 function touchStarted(event) {
   console.log(event.target);
-  if (event.target.closest('#panel')) return; 
+  if (!event.target.closest('#defaultCanvas0')) return; 
 
   if (touches.length === 1) {
     touchStartX  = touches[0].x;
@@ -346,7 +347,7 @@ function touchStarted(event) {
 }
 
 function touchMoved(event) {
-   if (event.target.closest('#panel')) return; 
+    if (!event.target.closest('#defaultCanvas0')) return; 
 
    if (touches.length === 1) {
     const s = scale();

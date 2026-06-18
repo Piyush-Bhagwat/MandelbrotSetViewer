@@ -10,13 +10,77 @@
 </head>
 
 <body>
+  <div id="infoModal" class="modal">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h3>What is the Mandelbrot Set?</h3>
+        <button class="close-btn" onclick="toggleInfo()">×</button>
+      </div>
+
+      <div class="modal-body">
+
+        <p>
+          The Mandelbrot Set is a famous mathematical fractal discovered by
+          Benoît Mandelbrot.
+        </p>
+
+        <p>
+          Every pixel on the screen represents a complex number.
+          We repeatedly apply:
+        </p>
+
+        <div class="formula">
+          z<sub>n+1</sub> = z<sub>n</sub><sup>2</sup> + c
+        </div>
+
+        <p>
+          If the values stay bounded forever, the point belongs to the
+          Mandelbrot Set and appears black.
+        </p>
+
+        <p>
+          If the values escape toward infinity, the point is colored according
+          to how quickly it escapes.
+        </p>
+
+        <p>
+          The amazing part is that no matter how deeply you zoom, new structures,
+          spirals and self-similar patterns continue to appear.
+        </p>
+
+        <hr>
+
+        <p>
+          Try exploring:
+        </p>
+
+        <ul>
+          <li>Mini Mandelbrots</li>
+          <li>Seahorse Valley</li>
+          <li>Elephant Valley</li>
+          <li>Spiral Regions</li>
+        </ul>
+
+        <p class="modal-footer">
+          Infinite complexity emerging from a very simple equation.
+        </p>
+
+      </div>
+
+    </div>
+  </div>
   <main>
     <button class="nav-btn" id="navBtn" onclick="toggleNav()">Explorer</button>
     <div class="credits">made by <a href="https://piyushs-portfolio.netlify.app/" target="_blank">abNORMAL</a></div>
     <div class="panel" id="panel">
       <div class="panel-header">
         <span class="panel-title">Mandelbrot</span>
-        <button class="close-btn" onclick="toggleNav()">×</button>
+
+        <div class="header-actions">
+          <button class="info-btn" onclick="toggleInfo()">i</button>
+          <button class="close-btn" onclick="toggleNav()">×</button>
+        </div>
       </div>
 
       <div class="stats section">
@@ -84,7 +148,8 @@
         </div>
       </div>
 
-      <div class="credits"></div>also thanks to claude and gpt :)</div>
+      <div class="credits"></div>also thanks to claude and gpt :)
+    </div>
     </div>
   </main>
 

@@ -48,3 +48,21 @@ function toggleNav() {
 }
 // in controls.js
 document.getElementById('panel').addEventListener('click', e => e.stopPropagation());
+function toggleInfo() {
+  document
+    .getElementById("infoModal")
+    .classList
+    .toggle("show");
+}
+document.addEventListener("click", (e) => {
+
+  const modal =
+    document.getElementById("infoModal");
+
+  if (
+    e.target === modal
+  ) {
+    modal.classList.remove("show");
+  }
+
+});

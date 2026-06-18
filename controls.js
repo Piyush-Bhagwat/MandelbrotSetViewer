@@ -46,3 +46,5 @@ function toggleNav() {
   document.getElementById('panel').classList.toggle('hidden');
 //   document.getElementById('navBtn').classList.toggle('hidden');
 }
+// in controls.js
+document.getElementById('panel').addEventListener('click', e => e.stopPropagation());

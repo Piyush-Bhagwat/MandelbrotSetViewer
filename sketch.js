@@ -239,6 +239,7 @@ function keyPressed() {
 }
 
 function mouseWheel(event) {
+  if (event.target.closest('#panel')) return; 
   if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
     const factor = event.delta > 0 ? 0.9 : 1.2;
     const s = scale();
@@ -331,27 +332,22 @@ function touchStarted() {
   if (touches.length === 1) {
     touchStartX  = touches[0].x;
     touchStartY  = touches[0].y;
-    touchStartCX = CENTER_X;
+    touchStartCX = CENTER_X;  // anchor, never update during drag
     touchStartCY = CENTER_Y;
     vx = 0; vy = 0;
   }
   if (touches.length === 2) {
     lastTouchDist = dist(touches[0].x, touches[0].y, touches[1].x, touches[1].y);
   }
-  return false; // prevent default scroll
+  return false;
 }
 
 function touchMoved() {
-  if (touches.length === 1) {
+   if (touches.length === 1) {
     const s = scale();
+    // offset from anchor, not delta
     CENTER_X = touchStartCX - (touches[0].x - touchStartX) * s;
     CENTER_Y = touchStartCY - (touches[0].y - touchStartY) * s;
-    vx = touches[0].x - touchStartX;
-    vy = touches[0].y - touchStartY;
-    touchStartX  = touches[0].x;
-    touchStartY  = touches[0].y;
-    touchStartCX = CENTER_X;
-    touchStartCY = CENTER_Y;
     startProgressive();
     drawBrot();
   }

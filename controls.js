@@ -42,7 +42,7 @@ function saveLocation(){
 }
 }
 
-function toggleNav(){
-    info.classList.toggle("open");
+function toggleNav() {
+  document.getElementById('panel').classList.toggle('hidden');
+//   document.getElementById('navBtn').classList.toggle('hidden');
 }
-

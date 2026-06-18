@@ -1,135 +1,204 @@
-html,
-body {
-  margin: 0;
-  padding: 0;
-  background: black;
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: #000;
+  overflow: hidden;
 }
 
-canvas {
-  display: block;
-}
+canvas { display: block; }
 
-.info {
+/* ── toggle button ── */
+.nav-btn {
   position: fixed;
-  top: -700px;
-  left: 10px;
-
-  background: rgba(20, 20, 20, 0.85);
-  color: #eee;
-  font-family: "Segoe UI", sans-serif;
-  font-size: 14px;
-  padding: 14px 18px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  max-width: 280px;
-  line-height: 1.5;
-  transition: 0.5s all;
-}
-
-.open{
-  top: 10px;
-}
-
-.close-btn{
-  position: absolute;
-  right: 5px;
+  top: 12px;
+  left: 12px;
+  z-index: 100;
+  background: rgba(12,12,12,0.85);
+  border: 0.5px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.65);
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 12px;
+  padding: 7px 13px;
   cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: background 0.15s, opacity 0.2s;
 }
-.open-btn{
+.nav-btn:hover { background: rgba(28,28,28,0.95); }
+.nav-btn.hidden { opacity: 0; pointer-events: none; }
+
+/* ── panel ── */
+.panel {
   position: fixed;
-  left: 10px;
-  top: 10px;
-  cursor: pointer;
-}
-
-.info #div1,
-.info #div2 {
-  margin-bottom: 8px;
-  font-weight: 500;
-}
-
-.controls p {
-  margin: 0;
+  top: 12px;
+  left: 12px;
+  z-index: 99;
+  width: 256px;
+  background: rgba(10,10,10,0.9);
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 14px 15px;
+  font-family: 'Segoe UI', sans-serif;
   font-size: 13px;
   color: #ddd;
+  backdrop-filter: blur(14px);
+  transition: transform 0.3s cubic-bezier(.4,0,.2,1), opacity 0.3s;
+}
+.panel.hidden {
+  transform: translateY(-16px);
+  opacity: 0;
+  pointer-events: none;
 }
 
-.highlight {
-  color: #6cf;
-  font-weight: bold;
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 0.5px solid rgba(255,255,255,0.07);
 }
+
+.panel-title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+
+.close-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+  border: none;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 22px;
+  text-align: center;
+  transition: background 0.15s;
+}
+.close-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
+
+/* ── section ── */
+.section {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 0.5px solid rgba(255,255,255,0.06);
+}
+.section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+.section-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 8px;
+}
+
+/* ── stats ── */
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.stat {
+  background: rgba(255,255,255,0.04);
+  border: 0.5px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+.stat.wide { grid-column: span 2; }
+
+.stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 2px;
+}
+
+.stat-value {
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── controls grid ── */
+.controls-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px 8px;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+}
+
+.hint { color: rgba(255,255,255,0.25); }
 
 kbd {
-  background: #333;
-  border: 1px solid #555;
+  background: rgba(255,255,255,0.09);
+  border: 0.5px solid rgba(255,255,255,0.15);
   border-radius: 4px;
-  padding: 2px 5px;
-  font-size: 12px;
+  padding: 1px 5px;
+  font-size: 11px;
   font-family: monospace;
-  color: #fff;
+  color: #bbb;
 }
 
-.gallery {
-  margin-top: 16px;
-  padding: 12px;
-  background: rgba(40, 40, 40, 0.8);
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.gallery h2 {
-  font-size: 1.1rem;
-  margin-bottom: 10px;
-  color: #fff;
-}
-
-.gallery select {
+/* ── gallery select ── */
+select {
   width: 100%;
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #555;
-  background: #222;
-  color: #eee;
-  font-size: 0.9rem;
-  margin-bottom: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: 7px;
+  color: #ddd;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 12px;
+  padding: 7px 10px;
+  margin-bottom: 7px;
   cursor: pointer;
+  appearance: none;
+}
+select:focus { outline: none; border-color: rgba(255,255,255,0.22); }
+
+/* ── buttons ── */
+.btn-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 5px;
 }
 
-.gallery button {
-  width: 100%;
-  background: #4f46e5;
-  color: #fff;
-  border: none;
-  padding: 7px 12px;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.gallery button:hover {
-  background: #3730a3;
-}
-
-.controls-bar {
-  margin-top: 12px;
-  display: flex;
-  gap: 8px;
-  justify-content: space-between;
-}
-
-.controls-bar button {
-  flex: 1;
-  background: #444;
-  color: #eee;
-  border: none;
+.btn {
+  background: rgba(255,255,255,0.05);
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: 7px;
+  color: #bbb;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 12px;
   padding: 7px 0;
-  border-radius: 6px;
-  font-size: 0.85rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.15s;
+  text-align: center;
 }
+.btn:hover { background: rgba(255,255,255,0.11); color: #fff; }
 
-.controls-bar button:hover {
-  background: #666;
+.btn.go {
+  grid-column: span 3;
+  margin-top: 2px;
+  background: rgba(90,80,220,0.25);
+  border-color: rgba(90,80,220,0.45);
+  color: #b8b4ff;
 }
+.btn.go:hover { background: rgba(90,80,220,0.4); color: #fff; }

@@ -12,7 +12,7 @@ let showOrbit = false;
 let prevMouseX = 0;
 let prevMouseY = 0;
 let inertialMove = false;
-
+let divZoom, divIter, divRender, divPos;
 let ITERATION = 200;
 
 const LIMIT = 20;
@@ -46,9 +46,10 @@ let pendingRequest = null;  // holds the latest params if worker is busy
 function setup() {
   createCanvas(windowWidth - 10, windowHeight - 10);
   pixelDensity(1);
-  div1 = document.getElementById("div1");
-  div2 = document.getElementById("div2");
-
+  divZoom   = document.getElementById("div-zoom");
+  divIter   = document.getElementById("div-iter");
+  divRender = document.getElementById("div-render");
+  divPos    = document.getElementById("div-pos");
   worker = new Worker('worker.js');
   worker.onerror = (e) => console.error("Worker error:", e);
   worker.onmessage = onWorkerMessage;
@@ -64,7 +65,7 @@ function windowResized() {
 }
 
 function onWorkerMessage(e) {
-const { pixels: workerPixels, cellS } = e.data;
+  const { pixels: workerPixels, cellS } = e.data;
 
   workerBusy = false;
 
@@ -76,13 +77,11 @@ const { pixels: workerPixels, cellS } = e.data;
   renderTime = performance.now() - renderTime;
 
   if (cellS === CELL_SIZE[CELL_SIZE.length - 2]) {
-    div1.innerHTML = `
-      Zoom: ${ZOOM.toExponential(3)}<br>
-      Details: ${Math.floor(getIterations())}<br>
-      Render: ${renderTime.toFixed(1)} ms
-    `;
+    divZoom.textContent = ZOOM.toExponential(3);
+    divIter.textContent = Math.floor(getIterations());
+    divRender.textContent = renderTime.toFixed(1) + ' ms';
   }
-  div2.innerHTML = `X: ${CENTER_X}; Y: ${CENTER_Y}`;
+  divPos.textContent = `${CENTER_X.toFixed(8)}, ${CENTER_Y.toFixed(8)}`;
 
   drawOrbit();
 
@@ -161,7 +160,7 @@ function drawOrbit() {
 }
 
 function getIterations() {
-  ITERATION = 200 + Math.log10(ZOOM) * 60;
+  ITERATION = 200 + Math.log10(ZOOM) * 100;
   return ITERATION;
 }
 
@@ -189,7 +188,7 @@ function draw() {
     CENTER_Y = lerp(CENTER_Y, target.centerY, 0.3);
 
     const lcur = Math.log(Math.max(ZOOM, 1e-12));
-    const lto  = Math.log(Math.max(target.zoom, 1e-12));
+    const lto = Math.log(Math.max(target.zoom, 1e-12));
     ZOOM = Math.exp(lerp(lcur, lto, e));
     ITERATION = lerp(ITERATION, target.iteration, e);
 
@@ -225,7 +224,7 @@ function draw() {
 
 // ─── Easing ──────────────────────────────────────────────────────────────────
 function smoothstep(t) {
-  return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
 // ─── Controls ────────────────────────────────────────────────────────────────
@@ -239,14 +238,14 @@ function keyPressed() {
 function mouseWheel(event) {
   if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
     const factor = event.delta > 0 ? 0.9 : 1.2;
-    const s  = scale();
-    const wx = CENTER_X + (mouseX - width  * 0.5) * s;
+    const s = scale();
+    const wx = CENTER_X + (mouseX - width * 0.5) * s;
     const wy = CENTER_Y + (mouseY - height * 0.5) * s;
     ZOOM *= factor;
     ZOOM = max(ZOOM, 1);
     ZOOM = min(ZOOM, 120657239077606);
     const sNew = scale();
-    CENTER_X = wx - (mouseX - width  * 0.5) * sNew;
+    CENTER_X = wx - (mouseX - width * 0.5) * sNew;
     CENTER_Y = wy - (mouseY - height * 0.5) * sNew;
     startProgressive();
     drawBrot();
@@ -293,18 +292,18 @@ function mouseClicked() {
   if (!keyIsDown(SHIFT)) return;
 
   orbitPoints = [];
-  const s  = scale();
-  const cx = CENTER_X + (mouseX - width  / 2) * s;
+  const s = scale();
+  const cx = CENTER_X + (mouseX - width / 2) * s;
   const cy = CENTER_Y + (mouseY - height / 2) * s;
   let a = 0, b = 0;
   orbitPoints.push([a, b]);
 
   for (let i = 0; i < 500; i++) {
-    const aa = a*a - b*b + cx;
-    const bb = 2*a*b + cy;
+    const aa = a * a - b * b + cx;
+    const bb = 2 * a * b + cy;
     a = aa; b = bb;
     orbitPoints.push([a, b]);
-    if (a*a + b*b > LIMIT * LIMIT) break;
+    if (a * a + b * b > LIMIT * LIMIT) break;
   }
 
   showOrbit = true;
@@ -312,12 +311,12 @@ function mouseClicked() {
 }
 
 function doubleClicked() {
-  const s  = scale();
-  const wx = CENTER_X + (mouseX - width  / 2) * s;
+  const s = scale();
+  const wx = CENTER_X + (mouseX - width / 2) * s;
   const wy = CENTER_Y + (mouseY - height / 2) * s;
   ZOOM *= 2;
   const sNew = scale();
-  CENTER_X = wx - (mouseX - width  / 2) * sNew;
+  CENTER_X = wx - (mouseX - width / 2) * sNew;
   CENTER_Y = wy - (mouseY - height / 2) * sNew;
   startProgressive();
 }

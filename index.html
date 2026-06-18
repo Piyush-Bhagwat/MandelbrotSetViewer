@@ -1,53 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/p5.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.11.10/lib/addons/p5.sound.min.js"></script>
   <link rel="stylesheet" type="text/css" href="style.css" />
   <meta charset="utf-8" />
 </head>
-
 <body>
   <main>
-    <button class="open-btn" onclick="toggleNav()">Nav</button>
-    <div class="info open" id="info">
-      <button class="close-btn"  onclick="toggleNav()">X</button>
-      <div id="div1"></div>
-      <div id="div2"></div>
-      <div class="controls">
-        <p>
-          <strong>Controls:</strong><br>
-          Scroll to <span class="highlight">zoom</span>,
-          middle-click + drag to <span class="highlight">move</span>,<br>
-          <kbd>w</kbd> = increase details,
-          <kbd>s</kbd> = decrease details,<br>
-          <kbd>r</kbd> = reset,a
-          <kbd>p</kbd> = print
-        </p>
+    <button class="nav-btn" id="navBtn" onclick="toggleNav()">Explorer</button>
+
+    <div class="panel" id="panel">
+      <div class="panel-header">
+        <span class="panel-title">Mandelbrot</span>
+        <button class="close-btn" onclick="toggleNav()">×</button>
       </div>
 
-      <div class="gallery">
-        <h2>Gallery</h2>
-
-        <select id="gallery">
-        </select>
-
-        <button onclick="setLocation()">Go</button>
+      <div class="stats section">
+        <div class="stat">
+          <div class="stat-label">Zoom</div>
+          <div class="stat-value" id="div-zoom">1.000e+0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Iterations</div>
+          <div class="stat-value" id="div-iter">200</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Render</div>
+          <div class="stat-value" id="div-render">— ms</div>
+        </div>
+        <div class="stat wide">
+          <div class="stat-label">Position</div>
+          <div class="stat-value" id="div-pos">-0.5, 0</div>
+        </div>
       </div>
 
-      <div class="controls-bar">
-        <button id="muteBtn" onclick="muteAudio()">Mute</button>
-        <button onclick="takeSnap()">Snap</button>
-        <button id="save" onclick="saveLocation()">Save</button>
+      <div class="section">
+        <div class="section-label">Controls</div>
+        <div class="controls-grid">
+          <div class="control-row"><span>Zoom</span><span class="hint">scroll</span></div>
+          <div class="control-row"><span>Pan</span><span class="hint">mid-drag</span></div>
+          <div class="control-row"><span>Zoom ×2</span><span class="hint">dbl-click</span></div>
+          <div class="control-row"><span>Orbit</span><kbd>⇧</kbd><span class="hint">+click</span></div>
+          <div class="control-row"><span>Reset</span><kbd>r</kbd></div>
+          <div class="control-row"><span>Snap</span><kbd>p</kbd></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Gallery</div>
+        <select id="gallery"></select>
+        <div class="btn-row">
+          <button class="btn" onclick="muteAudio()" id="muteBtn">Mute</button>
+          <button class="btn" onclick="takeSnap()">Snap</button>
+          <button class="btn" id="save" onclick="saveLocation()">Save</button>
+          <button class="btn go" onclick="setLocation()">Go →</button>
+        </div>
       </div>
     </div>
   </main>
+
   <audio id="stay" src="./STAY.mp3" autoplay loop></audio>
 
   <script src="data.js"></script>
-  <script src="controls.js"> </script>
+  <script src="controls.js"></script>
   <script src="sketch.js"></script>
 </body>
-
 </html>

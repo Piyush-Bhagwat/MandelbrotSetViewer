@@ -4,7 +4,7 @@ let ZOOM = 1;
 let CENTER_X = -0.5;
 let CENTER_Y = 0;
 let currentFormula = 'mandelbrot';
-let currentColor   = 'original';
+let currentColor = 'original';
 let renderTime = 0;
 let vx = 0;
 let vy = 0;
@@ -45,7 +45,7 @@ let pendingRequest = null;  // holds the latest params if worker is busy
 
 // ─── Setup ───────────────────────────────────────────────────────────────────
 function setup() {
-  createCanvas(windowWidth - 10, windowHeight - 10);
+  createCanvas(windowWidth - 10, windowHeight - 10, WEBGL);
   pixelDensity(1);
   divZoom = document.getElementById("div-zoom");
   divIter = document.getElementById("div-iter");
@@ -144,7 +144,7 @@ function drawOrbit() {
   const invScale = 1 / scale();
 
   stroke(35, 30, 180);
-  strokeWeight(2);
+  strokeWeight(1);
   noFill();
   beginShape();
   for (const p of orbitPoints) {
@@ -158,12 +158,12 @@ function drawOrbit() {
   for (const p of orbitPoints) {
     const sx = w / 2 + (p[0] - CENTER_X) * invScale;
     const sy = h / 2 + (p[1] - CENTER_Y) * invScale;
-    circle(sx, sy, 4);
+    circle(sx, sy, 3);
   }
 }
 
 function getIterations() {
-  ITERATION = 200 + Math.log10(ZOOM) * 100;
+  ITERATION = 200 + Math.log10(ZOOM) * 170;
   return ITERATION;
 }
 
@@ -184,24 +184,30 @@ function draw() {
   }
 
   if (animate) {
-    animProgress = min(1, animProgress + 0.01);
-    const e = smoothstep(animProgress / 2.6);
+    animProgress = min(1, animProgress + 0.003);
+    let e;
+    if (target.zoom > ZOOM) {
+      e = smoothAtEnd(animProgress);
+    } else {
+      e = smoohtAtStart(animProgress)
+    }
+    // interpolate the visible window directly
+    // from-window and to-window in complex plane
+    const fromW = 4 / animFrom.zoom;
+    const toW = 4 / target.zoom;
+    const currentW = lerp(fromW, toW, e);  // window shrinks = zoom in
 
-    CENTER_X = lerp(CENTER_X, target.centerX, 0.3);
-    CENTER_Y = lerp(CENTER_Y, target.centerY, 0.3);
+    ZOOM = 4 / currentW;
 
-    const lcur = Math.log(Math.max(ZOOM, 1e-12));
-    const lto = Math.log(Math.max(target.zoom, 1e-12));
-    ZOOM = Math.exp(lerp(lcur, lto, e));
-    ITERATION = lerp(ITERATION, target.iteration, e);
+    // pan proportional to zoom — target stays "locked" visually
+    CENTER_X = lerp(animFrom.centerX, target.centerX, e);
+    CENTER_Y = lerp(animFrom.centerY, target.centerY, e);
+
+    ITERATION = lerp(animFrom.iteration, target.iteration, e);
 
     startProgressive();
 
-    if (
-      abs(CENTER_X - target.centerX) < 1e-8 &&
-      abs(CENTER_Y - target.centerY) < 1e-8 &&
-      abs(Math.log(ZOOM) - lto) < 1e-3
-    ) {
+    if (animProgress >= 1) {
       CENTER_X = target.centerX;
       CENTER_Y = target.centerY;
       ZOOM = target.zoom;
@@ -210,7 +216,6 @@ function draw() {
       startProgressive();
     }
   }
-
   if (PROGRESSIVE && !workerBusy) {
     drawBrot();
     if (CELL_IDX < CELL_SIZE.length - 1) {
@@ -226,10 +231,13 @@ function draw() {
 }
 
 // ─── Easing ──────────────────────────────────────────────────────────────────
-function smoothstep(t) {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+function smoothAtEnd(t) {
+  return 1 - Math.pow(1 - t, 5);
 }
 
+function smoohtAtStart(t) {
+  return t * t * t * t;
+}
 // ─── Controls ────────────────────────────────────────────────────────────────
 function keyPressed() {
   if (key == "w") { ITERATION += 10; startProgressive(); drawBrot(); }
@@ -239,7 +247,7 @@ function keyPressed() {
 }
 
 function mouseWheel(event) {
-    if (!event.target.closest('#defaultCanvas0')) return; 
+  if (!event.target.closest('#defaultCanvas0')) return;
 
   if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
     const factor = event.delta > 0 ? 0.9 : 1.2;
@@ -247,7 +255,7 @@ function mouseWheel(event) {
     const wx = CENTER_X + (mouseX - width * 0.5) * s;
     const wy = CENTER_Y + (mouseY - height * 0.5) * s;
     ZOOM *= factor;
-    ZOOM = max(ZOOM, 1);
+    ZOOM = max(ZOOM, 0.6);
     ZOOM = min(ZOOM, 120657239077606);
     const sNew = scale();
     CENTER_X = wx - (mouseX - width * 0.5) * sNew;
@@ -331,11 +339,11 @@ let touchStartCX, touchStartCY, touchStartX, touchStartY;
 
 function touchStarted(event) {
   console.log(event.target);
-  if (!event.target.closest('#defaultCanvas0')) return; 
+  if (!event.target.closest('#defaultCanvas0')) return;
 
   if (touches.length === 1) {
-    touchStartX  = touches[0].x;
-    touchStartY  = touches[0].y;
+    touchStartX = touches[0].x;
+    touchStartY = touches[0].y;
     touchStartCX = CENTER_X;  // anchor, never update during drag
     touchStartCY = CENTER_Y;
     vx = 0; vy = 0;
@@ -347,9 +355,9 @@ function touchStarted(event) {
 }
 
 function touchMoved(event) {
-    if (!event.target.closest('#defaultCanvas0')) return; 
+  if (!event.target.closest('#defaultCanvas0')) return;
 
-   if (touches.length === 1) {
+  if (touches.length === 1) {
     const s = scale();
     // offset from anchor, not delta
     CENTER_X = touchStartCX - (touches[0].x - touchStartX) * s;
@@ -363,13 +371,13 @@ function touchMoved(event) {
       const factor = d / lastTouchDist;
       const mx = (touches[0].x + touches[1].x) / 2;
       const my = (touches[0].y + touches[1].y) / 2;
-      const s  = scale();
-      const wx = CENTER_X + (mx - width  * 0.5) * s;
+      const s = scale();
+      const wx = CENTER_X + (mx - width * 0.5) * s;
       const wy = CENTER_Y + (my - height * 0.5) * s;
       ZOOM *= factor;
       ZOOM = constrain(ZOOM, 1, 120657239077606);
       const sNew = scale();
-      CENTER_X = wx - (mx - width  * 0.5) * sNew;
+      CENTER_X = wx - (mx - width * 0.5) * sNew;
       CENTER_Y = wy - (my - height * 0.5) * sNew;
       startProgressive();
       drawBrot();
@@ -390,19 +398,33 @@ function touchEnded() {
 
 // ─── Navigation ──────────────────────────────────────────────────────────────
 function resetLocation() {
-  CENTER_X = -0.5; CENTER_Y = 0; ZOOM = 1; ITERATION = 200;
-  startProgressive();
-  drawBrot();
+  // CENTER_X = -0.5; CENTER_Y = 0; ZOOM = 1; ITERATION = 200;
+
+  // startProgressive();
+  // drawBrot();
+
+  setActualLocation({ centerX: -0.5, centerY: 0, zoom: 0.8, iteration: 200 })
+}
+// target = { centerX: CENTER_X, centerY: CENTER_Y, zoom: ZOOM, iteration: ITERATION }
+function setActualLocation(targetCoordiantes) {
+  // resetLocation();
+  animFrom = getLocation();
+  animProgress = 0;
+  // target = locations[gallery.value]; //in data.js
+  target = targetCoordiantes;
+  console.log({ target });
+  animate = true;
+  loop();
 }
 
 function setLocation() {
-  resetLocation();
-  animFrom = getLocation();
-  animProgress = 0;
+  CENTER_X = -0.5; CENTER_Y = 0; ZOOM = 1; ITERATION = 200;
+
+  startProgressive();
+  drawBrot();
+
   const gallery = document.getElementById("gallery");
-  target = locations[gallery.value];
-  animate = true;
-  loop();
+  setActualLocation(locations[gallery.value])
 }
 
 function takeSnap() { saveCanvas("mandelbrot.jpg"); }

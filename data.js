@@ -94,13 +94,118 @@ let locations = [
         "name": "Lighting",
         "zoom": 621075,
         "centerX": -1.253671586813726,
-        "centerY":-0.3826700355112246,
+        "centerY": -0.3826700355112246,
         "iteration": 400
+    },
+    {
+        name: "Seahorse Valley",
+        zoom: 850,
+        centerX: -0.7453,
+        centerY: 0.1127,
+        iteration: 500
+    },
+    {
+        name: "Triple Spiral",
+        zoom: 2200,
+        centerX: -0.08837174,
+        centerY: 0.65448880,
+        iteration: 600
+    }, {
+        name: "Needle",
+        zoom: 3500,
+        centerX: -1.25066,
+        centerY: 0.02012,
+        iteration: 700
+    }, {
+        name: "Galaxy",
+        zoom: 180000,
+        centerX: -0.745428,
+        centerY: 0.113009,
+        iteration: 1000
+    }, {
+        name: "Dragon",
+        zoom: 950000,
+        centerX: -0.743643887037151,
+        centerY: 0.13182590420533,
+        iteration: 1200
+    }, {
+        name: "Cathedral",
+        zoom: 2500000,
+        centerX: -0.745433648,
+        centerY: 0.113008441,
+        iteration: 1400
+    }, {
+        name: "Neuron",
+        zoom: 4800000,
+        centerX: -0.101096363845,
+        centerY: 0.956286510809,
+        iteration: 1500
+    }, {
+        name: "Eye",
+        zoom: 125000,
+        centerX: -0.748,
+        centerY: 0.1,
+        iteration: 900
+    }, {
+        name: "Phoenix",
+        zoom: 750000,
+        centerX: -1.769383179,
+        centerY: 0.004236847,
+        iteration: 1000
+    }, {
+        name: "Infinity",
+        zoom: 550000,
+        centerX: 0.00164288,
+        centerY: -0.82246652,
+        iteration: 900
+    }, 
+    {
+        name: "Orbit Playground",
+        zoom: 1200,
+        centerX: -0.74529,
+        centerY: 0.11274,
+        iteration: 700
+    },
+    {
+        name: "Inside",
+        zoom: 1200000,
+        centerX: -1.74974771609071,
+        centerY:  0.00005828594911,
+        iteration: 700
+    },
+    {
+        name: "Inside2",
+        zoom: 120000000,
+        centerX: -0.10715079727776 ,
+        centerY:  -0.91210278793461,
+        iteration: 700
+    },
+    {
+        name: "Golden Tendril",
+        zoom: 120000,
+        centerX: -0.80026,
+        centerY:  -0.15574,
+        iteration: 1700
+
+    },
+    {
+        name: "Needle Coast",
+        zoom: 140000000,
+        centerX: -1.77066592, 
+        centerY:  0.01633265,
+        iteration: 1700
     }
 ]
 
 const localData = JSON.parse(localStorage.getItem('locations'));
 
-if(localData){
-    locations = localData;
+if (localData) {
+
+    const map = new Map();
+
+    [...locations, ...localData].forEach(loc => {
+        map.set(loc.name, loc);
+    });
+
+    locations = [...map.values()];
 }

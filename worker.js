@@ -3,16 +3,6 @@ console.log("worker loaded");
 const LIMIT = 20;
 const LIMIT2 = LIMIT * LIMIT;
 
-//orignal
-// const palette = [
-//   [0, 2, 0],
-//   [32, 107, 203],
-//   [237, 255, 255],
-//   [255, 170, 0],
-//   [255, 70, 0],
-//   [180, 0, 180],
-// ];
-
 const palettes = {
   original:   [[0,2,0],[32,107,203],[237,255,255],[255,170,0],[255,70,0],[180,0,180]],
   pastel:     [[15,15,20],[180,160,220],[255,210,200],[180,230,210],[255,240,180],[200,180,240]],
@@ -41,6 +31,10 @@ function iterate(formula, a, b, oa, ob) {
     case 'perpendicular':
       aa = a*a - b*b;
       bb = -2 * Math.abs(a) * b;
+      break;
+    case 'omlet':
+       aa = a*a - b*b;
+      bb = 1*a*b;
       break;
     case 'linear':
       aa = a*a - b*b;

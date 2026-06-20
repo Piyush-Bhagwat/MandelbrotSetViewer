@@ -173,6 +173,7 @@ const CAMERA_SPEED = 9
 function draw() {
   const ZOOM_IN_KEY_DOWN = keyIsDown(UP_ARROW) || keyIsDown(87);
   const ZOOM_OUT_KEY_DOWN = keyIsDown(DOWN_ARROW) || keyIsDown(83);
+  const SHIFT_DOWN = keyIsDown(SHIFT);
   let zoomMove = false;
 
   // ── Joystick origin: lock when key first pressed, clear when released ──
@@ -185,12 +186,12 @@ function draw() {
 
   // ── W/S: zoom + steer ──
   if (ZOOM_IN_KEY_DOWN) {
-    vzoom = 1.005;
+    vzoom = SHIFT_DOWN ? 1.01 :  1.005;
     // vzoom = 1
     zoomMove = true;
   }
   if (ZOOM_OUT_KEY_DOWN) {
-    vzoom = 0.995;
+    vzoom = SHIFT_DOWN ? 0.95 : 0.995;
     zoomMove = true;
   }
   if (!ZOOM_IN_KEY_DOWN && !ZOOM_OUT_KEY_DOWN && vzoom !== 0) {
@@ -303,7 +304,10 @@ function smoohtAtStart(t) {
 function keyPressed() {
   if (key == "p") takeSnap();
   if (key == "r") resetLocation();
-
+  if (key == "Escape") {
+    console.log("Stop Animation")
+    animate = false
+  }
   loop();
 }
 

@@ -10,6 +10,7 @@ let vx = 0;
 let vy = 0;
 let orbitPoints = [];
 let showOrbit = false;
+let vzoom = 0; // add at top with other state
 let prevMouseX = 0;
 let prevMouseY = 0;
 let inertialMove = false;
@@ -45,7 +46,7 @@ let pendingRequest = null;  // holds the latest params if worker is busy
 
 // ─── Setup ───────────────────────────────────────────────────────────────────
 function setup() {
-  createCanvas(windowWidth - 10, windowHeight - 10, WEBGL);
+  createCanvas(windowWidth - 10, windowHeight - 10, P2D);
   pixelDensity(1);
   divZoom = document.getElementById("div-zoom");
   divIter = document.getElementById("div-iter");
@@ -163,18 +164,75 @@ function drawOrbit() {
 }
 
 function getIterations() {
-  ITERATION = 200 + Math.log10(ZOOM) * 170;
-  return ITERATION;
-}
+  return 200 + Math.log10(ZOOM) * 170;
 
+}
+let joystickOrigin = null;
+const CAMERA_SPEED = 9
 // ─── Draw loop ───────────────────────────────────────────────────────────────
 function draw() {
+  const ZOOM_IN_KEY_DOWN = keyIsDown(UP_ARROW) || keyIsDown(87);
+  const ZOOM_OUT_KEY_DOWN = keyIsDown(DOWN_ARROW) || keyIsDown(83);
+  let zoomMove = false;
+
+  // ── Joystick origin: lock when key first pressed, clear when released ──
+  if ((ZOOM_IN_KEY_DOWN || ZOOM_OUT_KEY_DOWN) && !joystickOrigin) {
+    joystickOrigin = { x: mouseX, y: mouseY };
+  }
+  if (!ZOOM_IN_KEY_DOWN && !ZOOM_OUT_KEY_DOWN) {
+    joystickOrigin = null;
+  }
+
+  // ── W/S: zoom + steer ──
+  if (ZOOM_IN_KEY_DOWN) {
+    vzoom = 1.005;
+    // vzoom = 1
+    zoomMove = true;
+  }
+  if (ZOOM_OUT_KEY_DOWN) {
+    vzoom = 0.995;
+    zoomMove = true;
+  }
+  if (!ZOOM_IN_KEY_DOWN && !ZOOM_OUT_KEY_DOWN && vzoom !== 0) {
+    // decay zoom inertia
+    vzoom = lerp(vzoom, 1, 0.05); // 1 = no zoom
+    inertialMove = true;
+
+    if (Math.abs(vzoom - 1) < 0.0001) { vzoom = 0; }
+    else { ZOOM *= vzoom; zoomMove = true; CELL_IDX = 3; drawBrot(); loop(); }
+  }
+
+  if (joystickOrigin) {
+    const dx = (mouseX - joystickOrigin.x) / (width * 0.5);
+    const dy = (mouseY - joystickOrigin.y) / (height * 0.5);
+    const panSpeed = 15 * scale();
+    CENTER_X += dx * panSpeed;
+    CENTER_Y += dy * panSpeed;
+
+    // store as velocity for inertia
+    vx = -dx * 15;
+    vy = -dy * 15;
+  }
+
+  if (zoomMove) {
+    if (ZOOM_IN_KEY_DOWN || ZOOM_OUT_KEY_DOWN) {
+      ZOOM *= vzoom;
+    }
+    CELL_IDX = 3; drawBrot(); loop();
+  }
+
+  // ── A/D + Arrow Left/Right: strafe ──
+  const panStep = 0.7 * scale();
+  if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) { vx = CAMERA_SPEED; inertialMove = true; CENTER_X -= panStep; loop(); }
+  if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) { vx = -CAMERA_SPEED; inertialMove = true; CENTER_X += panStep; loop(); }
+
+  // ── Inertia ──
   if (inertialMove) {
     const s = scale();
     CENTER_X -= vx * s;
     CENTER_Y -= vy * s;
-    vx *= 0.5;
-    vy *= 0.5;
+    vx *= 0.9;
+    vy *= 0.9;
     CELL_IDX = 3;
     drawBrot();
     if (Math.abs(vx) < 0.5 && Math.abs(vy) < 0.5) {
@@ -183,26 +241,17 @@ function draw() {
     }
   }
 
+  // ── Gallery animation ──
   if (animate) {
     animProgress = min(1, animProgress + 0.003);
-    let e;
-    if (target.zoom > ZOOM) {
-      e = smoothAtEnd(animProgress);
-    } else {
-      e = smoohtAtStart(animProgress)
-    }
-    // interpolate the visible window directly
-    // from-window and to-window in complex plane
+    const e = target.zoom > ZOOM ? smoothAtEnd(animProgress) : smoohtAtStart(animProgress);
+
     const fromW = 4 / animFrom.zoom;
     const toW = 4 / target.zoom;
-    const currentW = lerp(fromW, toW, e);  // window shrinks = zoom in
+    ZOOM = 4 / lerp(fromW, toW, e);
 
-    ZOOM = 4 / currentW;
-
-    // pan proportional to zoom — target stays "locked" visually
     CENTER_X = lerp(animFrom.centerX, target.centerX, e);
     CENTER_Y = lerp(animFrom.centerY, target.centerY, e);
-
     ITERATION = lerp(animFrom.iteration, target.iteration, e);
 
     startProgressive();
@@ -216,6 +265,18 @@ function draw() {
       startProgressive();
     }
   }
+
+  if (joystickOrigin) {
+
+    fill(255, 255, 255);
+    circle(joystickOrigin.x, joystickOrigin.y, 4)
+    circle(mouseX, mouseY, 4)
+    stroke(255, 255, 255)
+    strokeWeight(1);
+    line(joystickOrigin.x, joystickOrigin.y, mouseX, mouseY)
+  }
+
+  // ── Progressive refine ──
   if (PROGRESSIVE && !workerBusy) {
     drawBrot();
     if (CELL_IDX < CELL_SIZE.length - 1) {
@@ -227,7 +288,7 @@ function draw() {
     return;
   }
 
-  if (!animate && !inertialMove) noLoop();
+  if (!animate && !inertialMove && !zoomMove) noLoop();
 }
 
 // ─── Easing ──────────────────────────────────────────────────────────────────
@@ -240,10 +301,10 @@ function smoohtAtStart(t) {
 }
 // ─── Controls ────────────────────────────────────────────────────────────────
 function keyPressed() {
-  if (key == "w") { ITERATION += 10; startProgressive(); drawBrot(); }
-  if (key == "s") { if (ITERATION <= 30) return; ITERATION -= 10; startProgressive(); drawBrot(); }
   if (key == "p") takeSnap();
   if (key == "r") resetLocation();
+
+  loop();
 }
 
 function mouseWheel(event) {
@@ -403,7 +464,7 @@ function resetLocation() {
   // startProgressive();
   // drawBrot();
 
-  setActualLocation({ centerX: -0.5, centerY: 0, zoom: 0.8, iteration: 200 })
+  setActualLocation({ centerX: CENTER_X, centerY: CENTER_Y, zoom: 0.8, iteration: 200 })
 }
 // target = { centerX: CENTER_X, centerY: CENTER_Y, zoom: ZOOM, iteration: ITERATION }
 function setActualLocation(targetCoordiantes) {

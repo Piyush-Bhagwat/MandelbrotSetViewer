@@ -3,7 +3,6 @@
 let ZOOM = 1;
 let CENTER_X = -0.5;
 let CENTER_Y = 0;
-let currentFormula = 'mandelbrot';
 let currentColor = 'original';
 let renderTime = 0;
 let vx = 0;
@@ -489,7 +488,8 @@ function setLocation() {
   drawBrot();
 
   const gallery = document.getElementById("gallery");
-  setActualLocation(locations[gallery.value])
+  const loc = locations.find(l => l.name === gallery.value);
+  setActualLocation(loc)
 }
 
 function takeSnap() { saveCanvas("mandelbrot.jpg"); }

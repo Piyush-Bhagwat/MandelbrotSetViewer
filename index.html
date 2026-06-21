@@ -116,7 +116,7 @@
 
       <div class="section">
         <div class="section-label">Formula</div>
-        <select id="formulaSelect" onchange="currentFormula=this.value; startProgressive();">
+        <select id="formulaSelect" onchange="currentFormula=this.value; startProgressive(); rebuildGallery()">
           <option value="mandelbrot">Mandelbrot</option>
           <option value="burning">Burning Ship</option>
           <option value="tricorn">Tricorn</option>
@@ -142,7 +142,7 @@
         <div class="section-label">Gallery</div>
         <select id="gallery"></select>
         <div class="btn-row">
-          <button class="btn" onclick="muteAudio()" id="muteBtn">Mute</button>
+          <button class="btn" onclick="muteAudio()" id="muteBtn">Unmute</button>
           <button class="btn" onclick="takeSnap()">Snap</button>
           <button class="btn" id="save" onclick="saveLocation()">Save</button>
           <button class="btn go" onclick="setLocation()">Go →</button>
@@ -154,7 +154,7 @@
     </div>
   </main>
 
-  <audio id="stay" src="./STAY.mp3" autoplay loop></audio>
+  <audio id="stay" src="./STAY.mp3" loop></audio>
 
   <script src="data.js"></script>
   <script src="controls.js"></script>

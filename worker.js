@@ -4,45 +4,45 @@ const LIMIT = 20;
 const LIMIT2 = LIMIT * LIMIT;
 
 const palettes = {
-  original:   [[0,2,0],[32,107,203],[237,255,255],[255,170,0],[255,70,0],[180,0,180]],
-  pastel:     [[15,15,20],[180,160,220],[255,210,200],[180,230,210],[255,240,180],[200,180,240]],
-  bnw:        [[0,0,0],[40,40,40],[120,120,120],[200,200,200],[255,255,255],[80,80,80]],
-  ocean:      [[0,5,20],[0,40,80],[0,120,160],[0,200,180],[255,240,100],[0,80,120]],
-  lava:       [[5,0,0],[120,10,0],[220,50,0],[255,160,0],[255,255,180],[80,5,0]],
-  synthwave:  [[10,0,20],[120,0,180],[220,0,150],[0,200,255],[255,240,0],[60,0,120]],
-  forest:     [[5,15,5],[20,60,20],[60,120,40],[120,180,60],[220,210,120],[30,80,30]],
+  original: [[0, 2, 0], [32, 107, 203], [237, 255, 255], [255, 170, 0], [255, 70, 0], [180, 0, 180]],
+  pastel: [[15, 15, 20], [180, 160, 220], [255, 210, 200], [180, 230, 210], [255, 240, 180], [200, 180, 240]],
+  bnw: [[0, 0, 0], [40, 40, 40], [120, 120, 120], [200, 200, 200], [255, 255, 255], [80, 80, 80]],
+  ocean: [[0, 5, 20], [0, 40, 80], [0, 120, 160], [0, 200, 180], [255, 240, 100], [0, 80, 120]],
+  lava: [[5, 0, 0], [120, 10, 0], [220, 50, 0], [255, 160, 0], [255, 255, 180], [80, 5, 0]],
+  synthwave: [[10, 0, 20], [120, 0, 180], [220, 0, 150], [0, 200, 255], [255, 240, 0], [60, 0, 120]],
+  forest: [[5, 15, 5], [20, 60, 20], [60, 120, 40], [120, 180, 60], [220, 210, 120], [30, 80, 30]],
 };
 
 function iterate(formula, a, b, oa, ob) {
   let aa, bb;
-  switch(formula) {
+  switch (formula) {
     case 'burning':
-      aa = a*a - b*b;
+      aa = a * a - b * b;
       bb = 2 * Math.abs(a) * Math.abs(b);
       break;
     case 'tricorn':
-      aa = a*a - b*b;
+      aa = a * a - b * b;
       bb = -2 * a * b;
       break;
     case 'power3':
-      aa = a*a*a - 3*a*b*b;
-      bb = 3*a*a*b - b*b*b;
+      aa = a * a * a - 3 * a * b * b;
+      bb = 3 * a * a * b - b * b * b;
       break;
     case 'perpendicular':
-      aa = a*a - b*b;
+      aa = a * a - b * b;
       bb = -2 * Math.abs(a) * b;
       break;
     case 'omlet':
-       aa = a*a - b*b;
-      bb = 1*a*b;
+      aa = a * a - b * b;
+      bb = 1 * a * b;
       break;
     case 'linear':
-      aa = a*a - b*b;
-      bb = 2*a*b;
+      aa = a * a - b * b;
+      bb = 2 * a * b;
       return [aa + a + oa, bb + b + ob];  // different update
     default: // mandelbrot
-      aa = a*a - b*b;
-      bb = 2*a*b;
+      aa = a * a - b * b;
+      bb = 2 * a * b;
   }
   return [aa + oa, bb + ob];
 }
@@ -56,15 +56,15 @@ function lerpRGB(c1, c2, t) {
 }
 
 function getColor(n, maxIter, palette) {  // palette passed in now
-  let t   = (n / maxIter) % 1;
-  let idx  = Math.floor(t * (palette.length - 1));
+  let t = (n / maxIter) % 1;
+  let idx = Math.floor(t * (palette.length - 1));
   let frac = t * (palette.length - 1) - idx;
   return lerpRGB(palette[idx], palette[idx + 1] || palette[idx], frac);
 }
 
 self.onmessage = function (e) {
   const { centerX, centerY, zoom, iteration, width, height, cellS, offX, offY, formula, colorScheme } = e.data;
-const palette = palettes[colorScheme] || palettes.original;
+  const palette = palettes[colorScheme] || palettes.original;
   const xMin = centerX - 2 / zoom;
   const xMax = centerX + 2 / zoom;
   const yMin = centerY - (2 * height / width) / zoom;
@@ -96,7 +96,7 @@ const palette = palettes[colorScheme] || palettes.original;
         shade = Math.min(Math.max(0.7 + logMag * 0.14, 0.7), 1.4);
       }
 
-      const bright = n >= maxIter ? 0 : n * 255 / maxIter;
+      let bright = n >= maxIter ? 0 : n * 255 / maxIter;
       const col = getColor(bright, 255, palette);
       col[0] *= shade;
       col[1] *= shade;
